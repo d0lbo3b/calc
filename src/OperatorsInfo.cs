@@ -52,7 +52,7 @@ public static class OperatorsInfo {
                                                          ),
                                                       new(
                                                           OperatorType.Factorial,
-                                                          Negative,
+                                                          Factorial,
                                                           CheckLeft
                                                          ),
                                                   ];
@@ -120,6 +120,25 @@ public static class OperatorsInfo {
         output = context;
     }
     
+    private static void Factorial(List<string> context, Operator op, out List<string> output) {
+        context.RemoveAt(op.Position);
+        
+        if (!int.TryParse(context[op.Position-1], out var num)) {
+            Console.WriteLine("Unable to calculate factorial of non-integer value");
+        }
+        long factorial = 1;
+        for (var i = 1; i < num+1; i++) {
+            factorial *= i;
+        }
+
+        if (num < 0) {
+            factorial = 1;
+        }
+        
+        context[op.Position-1] = factorial.ToString();
+        output = context;
+    }
+    
     #endregion Operations
     #region Checks
     private static bool CheckAround(List<string> context, Operator op) {
@@ -138,7 +157,7 @@ public static class OperatorsInfo {
     private static bool CheckLeft(List<string> context, Operator op) {
         var check = op.Position > 0
                     && !commands.Contains(context[op.Position-1])
-                    && ((op.Position < context.Count-1 || commands.Contains(context[op.Position+1])) || op.Position == context.Count-1);
+                    && op.Position == context.Count-1 || (op.Position < context.Count-1 && commands.Contains(context[op.Position+1]));
         
         return check;
     }
