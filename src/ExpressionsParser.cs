@@ -12,7 +12,7 @@ public class ExpressionsParser : Parser {
                 foreach (var op in ops) {
                     if (i >= context.Count) break;
                     if (!Equals(context[i], AttributeUnwrapper.Unwrap<StringAttribute>(op)!.String)) continue;
-                    foreach (var opDesc in OperatorsInfo.operatorsDesc) {
+                    foreach (var opDesc in OperatorsInfo.operationsDesc) {
                         if (!Equals(op, opDesc.Type)) continue;
                         opDesc.AssignPosition(i);
                         if (!opDesc.Check(context, opDesc)) continue;
@@ -23,8 +23,9 @@ public class ExpressionsParser : Parser {
                 }
             }
         }
-
-        result = context[0];
-        return !Equals(context, null);
+        if (context.Count > 0) {
+            result = context[0];
+        }
+        return !Equals(context.Count, 0);
     }
 }

@@ -1,90 +1,200 @@
 ﻿using System.Globalization;
 using calculator.api;
 using calculator.attributes;
-using calculator.extensions;
 
 namespace calculator;
 
 public static class OperatorsInfo {
-    public static readonly string[] commands = ["+", "-", "*", "/", "(", ")", "!"];
-    public static readonly Dictionary<int, OperatorType[]> priority = new() {
-                                                                                             {Iota.GetIota(),           [OperatorType.LeftBracket]},
-                                                                                             {Iota.GetIota(),           [OperatorType.Factorial]},
-                                                                                             {Iota.GetIota(),           [OperatorType.Negative, OperatorType.Positive]},
-                                                                                             {Iota.GetIota(),           [OperatorType.Mul, OperatorType.Div]},
-                                                                                             {Iota.GetIota(true), [OperatorType.Minus, OperatorType.Plus]},
+    public static readonly string[] commands = ["+", "-", "*", "/", "(", ")", "!", "sin", "cos", "tan"];
+    public static readonly Dictionary<int, OperationType[]> priority = new() {
+                                                                                             {Iota.GetIota(),           [OperationType.LeftBracket]},
+                                                                                             {Iota.GetIota(),           [OperationType.Factorial]},
+                                                                                             {Iota.GetIota(),           [OperationType.Negative, OperationType.Positive]},
+                                                                                             {Iota.GetIota(),           [OperationType.Sin, OperationType.Cos, OperationType.Tan]},
+                                                                                             {Iota.GetIota(),           [OperationType.Mul, OperationType.Div]},
+                                                                                             {Iota.GetIota(true), [OperationType.Minus, OperationType.Plus]},
                                                                                          };
 
 
-    public static readonly Operator[] operatorsDesc = [new(
-                                                          OperatorType.Plus,
+    public static readonly Operation[] operationsDesc = [new(
+                                                          OperationType.Plus,
+                                                          OperationScope.LeftAndRight,
                                                           Calculate,
                                                           CheckAround
                                                        ),
                                                       new(
-                                                          OperatorType.Minus,
+                                                          OperationType.Minus,
+                                                          OperationScope.LeftAndRight,
                                                           Calculate,
                                                           CheckAround
                                                          ),
                                                       new(
-                                                          OperatorType.Mul,
+                                                          OperationType.Mul,
+                                                          OperationScope.LeftAndRight,
                                                           Calculate,
                                                           CheckAround
                                                          ),
                                                       new(
-                                                          OperatorType.Div,
+                                                          OperationType.Div,
+                                                          OperationScope.LeftAndRight,
                                                           Calculate,
                                                           CheckAround
                                                          ),
                                                       new(
-                                                          OperatorType.LeftBracket,
-                                                          Bracket,
-                                                          (_, _) => true),
+                                                          OperationType.LeftBracket,
+                                                          OperationScope.Right,
+                                                          Calculate,
+                                                          (_, _) => true,
+                                                          true
+                                                          ),
                                                       new(
-                                                          OperatorType.Positive,
-                                                          Positive,
+                                                          OperationType.Positive,
+                                                          OperationScope.Right,
+                                                          Calculate,
                                                           CheckRight
                                                          ),
                                                       new(
-                                                          OperatorType.Negative,
-                                                          Negative,
+                                                          OperationType.Negative,
+                                                          OperationScope.Right,
+                                                          Calculate,
                                                           CheckRight
                                                          ),
                                                       new(
-                                                          OperatorType.Factorial,
-                                                          Factorial,
+                                                          OperationType.Factorial,
+                                                          OperationScope.Left,
+                                                          Calculate,
                                                           CheckLeft
+                                                         ),
+                                                      new(
+                                                          OperationType.Sin,
+                                                          OperationScope.Right,
+                                                          Calculate,
+                                                          CheckRight
+                                                         ),
+                                                      new(
+                                                          OperationType.Cos,
+                                                          OperationScope.Right,
+                                                          Calculate,
+                                                          CheckRight
+                                                         ),
+                                                      new(
+                                                          OperationType.Tan,
+                                                          OperationScope.Right,
+                                                          Calculate,
+                                                          CheckRight
                                                          ),
                                                   ];
 
 
     #region Operations
-    private static void Calculate(List<string> context, Operator op, out List<string> output) {
-        var (a, b) = context.ParseAroundAsDouble(op.Position);
-        
-        for (var i = 0; i < 3; i++) {
-            context.RemoveAt(op.Position-1);
+    private static void Calculate(List<string> context, Operation op, out List<string> output) {
+        if (op.IsSpecial) {
+            ActivateSpecial(context, op, out var temp);
+            output = temp;
+            return;
         }
-        context.Insert(
-                       op.Position-1,
-                       Activate(a, b, op.Type).ToString(CultureInfo.CurrentCulture)
-                       );
         
-        output = context;
+        var (a, b) = Handle(context, op);
+        var result = Activate(a, b, op);
+        
+        Insert(result, context, op, out var tempOut);
+        
+        output = tempOut;
     }
-
-    private static double Activate(double a, double b, OperatorType operation) {
-        return operation switch {
-                   OperatorType.Plus  => a+b,
-                   OperatorType.Minus => a-b,
-                   OperatorType.Mul   => a*b,
-                   OperatorType.Div   => a/b,
-                   _                  => -1
+    
+    private static double Activate(double a, double b, Operation op) {
+        return op.Scope switch {
+                   OperationScope.Left => op.Type switch {
+                                              OperationType.Factorial => MathD.Factorial((long)a),
+                                              _                       => throw new ArgumentOutOfRangeException(nameof(op.Type), op.Type, null)
+                                          },
+                   OperationScope.LeftAndRight => op.Type switch {
+                                                      OperationType.Plus  => a+b,
+                                                      OperationType.Minus => a-b,
+                                                      OperationType.Mul   => a*b,
+                                                      OperationType.Div   => a/b,
+                                                      _                   => throw new ArgumentOutOfRangeException(nameof(op.Type), op.Type, null)
+                                                  },
+                   OperationScope.Right => op.Type switch {
+                                               OperationType.Positive    => b,
+                                               OperationType.Negative    => -b,
+                                               OperationType.Sin         => MathD.Sin(b),
+                                               OperationType.Cos         => MathD.Cos(b),
+                                               OperationType.Tan         => MathD.Tan(b),
+                                               _                         => throw new ArgumentOutOfRangeException(nameof(op.Type), op.Type, null)
+                                           },
+                   _ => throw new ArgumentOutOfRangeException(nameof(op.Scope), op.Scope, null)
                };
     }
     
-    private static void Bracket(List<string> context, Operator op, out List<string> output) {
-        var (openIndex, closeIndex) = (op.Position, context.IndexOf(AttributeUnwrapper.Unwrap<StringAttribute>(OperatorType.RightBracket)!.String));
+    private static void ActivateSpecial(List<string> context, Operation op, out List<string> output) {
+        output = [];
+        
+        switch (op.Type) {
+            case OperationType.LeftBracket: {
+                Brackets(context, op, out var temp);
+                output = temp;
+                break;
+            }
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private static (double a, double b) Handle(List<string> context, Operation op) {
+        (double a, double b) = (-1, -1);
+        switch (op.Scope) {
+            case OperationScope.Left: {
+                context.RemoveAt(op.Position);
+                a = double.Parse(context[op.Position-1]);
+                context.RemoveAt(op.Position-1);
+                break;
+            }
+            case OperationScope.LeftAndRight: {
+                (a, b) = (double.Parse(context[op.Position-1]), double.Parse(context[op.Position+1]));
+                for (var i = 0; i < 3; i++) {
+                    context.RemoveAt(op.Position-1);
+                }
+                break;
+            }
+            case OperationScope.Right:
+                context.RemoveAt(op.Position);
+                b = double.Parse(context[op.Position]);
+                context.RemoveAt(op.Position);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        
+        return (a, b);
+    }
+
+    private static void Insert(double result, List<string> context, Operation op, out List<string> output) {
+        switch (op.Scope) {
+            case OperationScope.Left:
+            case OperationScope.LeftAndRight: {
+                context.Insert(
+                               op.Position-1,
+                               result.ToString(CultureInfo.CurrentCulture)
+                              );
+                break;
+            }
+            case OperationScope.Right:
+                context.Insert(
+                               op.Position,
+                               result.ToString(CultureInfo.CurrentCulture)
+                              );
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        output = context;
+    }
+    
+    #region Special
+
+    private static void Brackets(List<string> context, Operation op, out List<string> output) {
+        var (openIndex, closeIndex) = (op.Position, context.IndexOf(AttributeUnwrapper.Unwrap<StringAttribute>(OperationType.RightBracket)!.String));
         
         context.RemoveAt(closeIndex);
         context.RemoveAt(op.Position);
@@ -99,62 +209,35 @@ public static class OperatorsInfo {
         
         for (var i = 0; i < context.Count; i++) {
             if (i >= openIndex && !appendedWithResult) {
-                temp = [result];
+                temp.Add(result);
                 appendedWithResult = true;
                 continue;
             }
-            if (Enumerable.Range(openIndex, closeIndex-1).Contains(i)) continue;
+            if (i >= openIndex && i <= closeIndex) continue;
             temp.Add(context[i]);
         }
 
         output = temp;
     }
-    private static void Positive(List<string> context, Operator op, out List<string> output) {
-        context.RemoveAt(op.Position);
-        output = context;
-    }
-    
-    private static void Negative(List<string> context, Operator op, out List<string> output) {
-        context.RemoveAt(op.Position);
-        context[op.Position] = $"-{context[op.Position]}";
-        output = context;
-    }
-    
-    private static void Factorial(List<string> context, Operator op, out List<string> output) {
-        context.RemoveAt(op.Position);
-        
-        if (!int.TryParse(context[op.Position-1], out var num)) {
-            Console.WriteLine("Unable to calculate factorial of non-integer value");
-        }
-        long factorial = 1;
-        for (var i = 1; i < num+1; i++) {
-            factorial *= i;
-        }
 
-        if (num < 0) {
-            factorial = 1;
-        }
-        
-        context[op.Position-1] = factorial.ToString();
-        output = context;
-    }
+    #endregion
     
     #endregion Operations
     #region Checks
-    private static bool CheckAround(List<string> context, Operator op) {
+    private static bool CheckAround(List<string> context, Operation op) {
         var check = op.Position > 0 
                     && op.Position < context.Count - 1 
                     && !commands.Contains(context[op.Position-1])
                     && !commands.Contains(context[op.Position+1]);
         return check;
     }
-    private static bool CheckRight(List<string> context, Operator op) {
+    private static bool CheckRight(List<string> context, Operation op) {
         var check = op.Position < context.Count - 1
                     && (op.Position == 0 || commands.Contains(context[op.Position-1]))
                     && !commands.Contains(context[op.Position+1]);
         return check;
     }
-    private static bool CheckLeft(List<string> context, Operator op) {
+    private static bool CheckLeft(List<string> context, Operation op) {
         var check = op.Position > 0
                     && !commands.Contains(context[op.Position-1])
                     && op.Position == context.Count-1 || (op.Position < context.Count-1 && commands.Contains(context[op.Position+1]));
