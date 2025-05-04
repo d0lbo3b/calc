@@ -13,18 +13,18 @@ public static class MathD {
 
     public static double Sin(double degrees) {
         degrees %= 360;
-        return Math.Sin(Math.PI*degrees/180.0);
+        return (float)Math.Sin(Math.PI*degrees/180.0);
     }
     
     public static double Cos(double degrees) {
         degrees %= 360;
         if (degrees is 90 or -90) return 0;
-        return Math.Cos(Math.PI*degrees/180.0);
+        return (float)Math.Cos(Math.PI*degrees/180.0);
     }
     
     public static double Tan(double degrees) {
         degrees %= 360;
         if (degrees is 0 or 180) return 0;
-        return Math.Tan(Math.PI*degrees/180.0);
+        return (float)Math.Tan(Math.PI*degrees/180.0);
     }
 }

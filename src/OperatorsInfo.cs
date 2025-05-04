@@ -5,85 +5,109 @@ using calculator.attributes;
 namespace calculator;
 
 public static class OperatorsInfo {
-    public static readonly string[] commands = ["+", "-", "*", "/", "(", ")", "!", "sin", "cos", "tan"];
+    public static readonly string[] commands = ["+", "-", "*", "/", "%",  "(", ")", "!", "sin", "cos", "tan", "sqrt", "^"];
     public static readonly Dictionary<int, OperationType[]> priority = new() {
-                                                                                             {Iota.GetIota(),           [OperationType.LeftBracket]},
-                                                                                             {Iota.GetIota(),           [OperationType.Factorial]},
-                                                                                             {Iota.GetIota(),           [OperationType.Negative, OperationType.Positive]},
-                                                                                             {Iota.GetIota(),           [OperationType.Sin, OperationType.Cos, OperationType.Tan]},
-                                                                                             {Iota.GetIota(),           [OperationType.Mul, OperationType.Div]},
-                                                                                             {Iota.GetIota(true), [OperationType.Minus, OperationType.Plus]},
+                                                                                             {Iota.GetIota(),
+                                                                                                 [OperationType.LeftBracket]},
+                                                                                             {Iota.GetIota(),
+                                                                                                 [OperationType.Factorial]},
+                                                                                             {Iota.GetIota(),
+                                                                                                 [OperationType.Negative, OperationType.Positive]},
+                                                                                             {Iota.GetIota(),
+                                                                                                 [OperationType.Sin, OperationType.Cos, OperationType.Tan]},
+                                                                                             {Iota.GetIota(),
+                                                                                                 [OperationType.Mul, OperationType.Div, OperationType.Sqrt, OperationType.Pow, OperationType.Mod]},
+                                                                                             {Iota.GetIota(true),
+                                                                                                 [OperationType.Minus, OperationType.Plus]},
                                                                                          };
 
-
-    public static readonly Operation[] operationsDesc = [new(
-                                                          OperationType.Plus,
-                                                          OperationScope.LeftAndRight,
-                                                          Calculate,
-                                                          CheckAround
-                                                       ),
-                                                      new(
-                                                          OperationType.Minus,
-                                                          OperationScope.LeftAndRight,
-                                                          Calculate,
-                                                          CheckAround
-                                                         ),
-                                                      new(
-                                                          OperationType.Mul,
-                                                          OperationScope.LeftAndRight,
-                                                          Calculate,
-                                                          CheckAround
-                                                         ),
-                                                      new(
-                                                          OperationType.Div,
-                                                          OperationScope.LeftAndRight,
-                                                          Calculate,
-                                                          CheckAround
-                                                         ),
-                                                      new(
-                                                          OperationType.LeftBracket,
-                                                          OperationScope.Right,
-                                                          Calculate,
-                                                          (_, _) => true,
-                                                          true
-                                                          ),
-                                                      new(
-                                                          OperationType.Positive,
-                                                          OperationScope.Right,
-                                                          Calculate,
-                                                          CheckRight
-                                                         ),
-                                                      new(
-                                                          OperationType.Negative,
-                                                          OperationScope.Right,
-                                                          Calculate,
-                                                          CheckRight
-                                                         ),
-                                                      new(
-                                                          OperationType.Factorial,
-                                                          OperationScope.Left,
-                                                          Calculate,
-                                                          CheckLeft
-                                                         ),
-                                                      new(
-                                                          OperationType.Sin,
-                                                          OperationScope.Right,
-                                                          Calculate,
-                                                          CheckRight
-                                                         ),
-                                                      new(
-                                                          OperationType.Cos,
-                                                          OperationScope.Right,
-                                                          Calculate,
-                                                          CheckRight
-                                                         ),
-                                                      new(
-                                                          OperationType.Tan,
-                                                          OperationScope.Right,
-                                                          Calculate,
-                                                          CheckRight
-                                                         ),
-                                                  ];
+    public static readonly Operation[] operationsDesc = [
+                                                            new(
+                                                             OperationType.Plus,
+                                                             OperationScope.LeftAndRight,
+                                                             Calculate,
+                                                             Check
+                                                            ),
+                                                            new(
+                                                                OperationType.Minus,
+                                                                OperationScope.LeftAndRight,
+                                                                Calculate,
+                                                                Check
+                                                               ),
+                                                            new(
+                                                                OperationType.Mul,
+                                                                OperationScope.LeftAndRight,
+                                                                Calculate,
+                                                                Check
+                                                               ),
+                                                            new(
+                                                                OperationType.Div,
+                                                                OperationScope.LeftAndRight,
+                                                                Calculate,
+                                                                Check
+                                                               ),
+                                                            new(
+                                                                OperationType.LeftBracket,
+                                                                OperationScope.Right,
+                                                                Calculate,
+                                                                (_, _) => true,
+                                                                true
+                                                                ),
+                                                            new(
+                                                                OperationType.Positive,
+                                                                OperationScope.Right,
+                                                                Calculate,
+                                                                Check
+                                                               ),
+                                                            new(
+                                                                OperationType.Negative,
+                                                                OperationScope.Right,
+                                                                Calculate,
+                                                                Check
+                                                               ),
+                                                            new(
+                                                                OperationType.Factorial,
+                                                                OperationScope.Left,
+                                                                Calculate,
+                                                                Check
+                                                               ),
+                                                            new(
+                                                                OperationType.Sin,
+                                                                OperationScope.Right,
+                                                                Calculate,
+                                                                Check
+                                                               ),
+                                                            new(
+                                                                OperationType.Cos,
+                                                                OperationScope.Right,
+                                                                Calculate,
+                                                                Check
+                                                               ),
+                                                            new(
+                                                                OperationType.Tan,
+                                                                OperationScope.Right,
+                                                                Calculate,
+                                                                Check
+                                                               ),
+                                                            new(
+                                                                OperationType.Sqrt,
+                                                                OperationScope.Right,
+                                                                Calculate,
+                                                                Check
+                                                               ),
+                                                            new(
+                                                                OperationType.Pow,
+                                                                OperationScope.LeftAndRight,
+                                                                Calculate,
+                                                                Check
+                                                               ),
+                                                            new(
+                                                                OperationType.Mod,
+                                                                OperationScope.LeftAndRight,
+                                                                Calculate,
+                                                                Check
+                                                               ),
+                                                        ];
 
 
     #region Operations
@@ -113,6 +137,8 @@ public static class OperatorsInfo {
                                                       OperationType.Minus => a-b,
                                                       OperationType.Mul   => a*b,
                                                       OperationType.Div   => a/b,
+                                                      OperationType.Mod   => a%b,
+                                                      OperationType.Pow   => Math.Pow(a,b),
                                                       _                   => throw new ArgumentOutOfRangeException(nameof(op.Type), op.Type, null)
                                                   },
                    OperationScope.Right => op.Type switch {
@@ -121,6 +147,7 @@ public static class OperatorsInfo {
                                                OperationType.Sin         => MathD.Sin(b),
                                                OperationType.Cos         => MathD.Cos(b),
                                                OperationType.Tan         => MathD.Tan(b),
+                                               OperationType.Sqrt        => Math.Sqrt(b),
                                                _                         => throw new ArgumentOutOfRangeException(nameof(op.Type), op.Type, null)
                                            },
                    _ => throw new ArgumentOutOfRangeException(nameof(op.Scope), op.Scope, null)
@@ -194,6 +221,7 @@ public static class OperatorsInfo {
     #region Special
 
     private static void Brackets(List<string> context, Operation op, out List<string> output) {
+        // TODO implement nested brackets 
         var (openIndex, closeIndex) = (op.Position, context.IndexOf(AttributeUnwrapper.Unwrap<StringAttribute>(OperationType.RightBracket)!.String));
         
         context.RemoveAt(closeIndex);
@@ -223,7 +251,17 @@ public static class OperatorsInfo {
     #endregion
     
     #endregion Operations
+    
     #region Checks
+
+    private static bool Check(List<string> context, Operation op) {
+        return op.Scope switch {
+                   OperationScope.Left         => CheckLeft(context, op),
+                   OperationScope.LeftAndRight => CheckAround(context, op),
+                   OperationScope.Right        => CheckRight(context, op),
+                   _                           => false
+               };
+    }
     private static bool CheckAround(List<string> context, Operation op) {
         var check = op.Position > 0 
                     && op.Position < context.Count - 1 

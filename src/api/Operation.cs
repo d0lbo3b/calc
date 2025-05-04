@@ -27,6 +27,12 @@ public enum OperationType {
     Cos = 10,
     [String("tan")]
     Tan = 11,
+    [String("sqrt")]
+    Sqrt = 12,
+    [String("^")]
+    Pow = 13,
+    [String("%")]
+    Mod = 14
 }
 
 public enum OperationScope {

@@ -19,19 +19,17 @@ public static class StringExtensions {
     public static bool AnyOf(this string str, string[] target, out string result, int start = 0) {
         result = string.Empty;
 
-        var enumerator = target
-                     .Where(x => x[0] == str[start])
-                     .GetEnumerator();
-
-        foreach (var el in (IEnumerable<string>)enumerator) {
-            var slice = str.Take(new Range(start, start+el.Length));
-
-            var ip = 0;
-            result = slice
-                 .TakeWhile(ch => ip < el.Length && Equals(ch, el[ip]))
-                 .Aggregate(result, (current, _) => current+el[ip++]);
+        var results = target.Where(x => x[0] == str[start]);
+        List<string> enumerable = [];
+        
+        for (var i = 0; i < str.Length-start; i++) {
+            enumerable = results.ToList();
+            if (enumerable.Count <= 1) break;
+            results = enumerable.Where(x => x[i] == str[start+i]);
         }
         
-        return result.Length != 0;
+        result = enumerable.Count > 0? enumerable[0] : string.Empty;
+        
+        return enumerable.Count > 0;
     }
 }
