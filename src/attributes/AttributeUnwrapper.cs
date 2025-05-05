@@ -8,5 +8,4 @@ public static class AttributeUnwrapper {
         
         return attributes.Length > 0 ? (TA)attributes[0] : default;
     }
-
 }
